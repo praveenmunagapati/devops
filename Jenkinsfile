@@ -28,7 +28,6 @@ pipeline {
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and remove existing container if it exists
                     echo 'Stopping existing Flask application...'
                     bat "docker stop ${CONTAINER_NAME} || exit 0"
                     bat "docker rm ${CONTAINER_NAME} || exit 0"
@@ -39,9 +38,19 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    // Run the Docker container
                     echo 'Running Flask application in Docker...'
                     bat "docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    // Assuming kubectl is already configured for local access
+                    echo 'Deploying to local Kubernetes...'
+                    bat "kubectl apply -f flask-app-deployment.yaml"
+                    bat "kubectl apply -f flask-app-service.yaml"
                 }
             }
         }
@@ -50,7 +59,6 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            // Remove the Docker image if desired
             bat "docker rmi ${IMAGE_NAME} || exit 0"
         }
     }

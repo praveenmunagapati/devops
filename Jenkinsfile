@@ -48,7 +48,7 @@ pipeline {
                     // This step greatly depends on where and how you're deploying your app
                     echo 'Deploying application...'
                     // Example: bat 'copy /Y .\*.* user@your_server:/path/to/deploy'
-                    bat "call ${VENV_PATH}\\Scripts\\activate.bat && flask run"
+                    bat "call ${VENV_PATH}\\Scripts\\activate.bat && python app.py"
                 }
             }
         }

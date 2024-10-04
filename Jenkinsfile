@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script {
                     // Create a temporary kubeconfig file
-                    writeFile file: 'kubeconfig', text: credentials('kubeconfig')
+                    //writeFile file: 'kubeconfig', text: credentials('kubeconfig')
 
                     // Set the Kube config environment variable
                     env.KUBECONFIG = 'kubeconfig'

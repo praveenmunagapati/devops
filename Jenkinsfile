@@ -9,8 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from a source control 
-                //management system (e.g., Git)
+                // Checkout code from a source control management system (e.g., Git)
                 git url: 'https://github.com/praveenmunagapati/devops.git', branch: 'main'
             }
         }
@@ -18,18 +17,18 @@ pipeline {
         stage('Setup Virtual Environment') {
             steps {
                 script {
-                    // Check for the virtual environment, 
-                    // create it if it doesn't exist
-                    sh 'bash -c "python3 -m venv $VENV_PATH"'
+                    // Check for the virtual environment, create it if it doesn't exist
+                    bat "python -m venv ${VENV_PATH}"
                     // Activate the virtual environment
-                    sh 'bash -c "source $VENV_PATH/bin/activate"'
+                    bat "call ${VENV_PATH}\\Scripts\\activate.bat"
                 }
             }
         }
-         stage('Install dependencies') {
+
+        stage('Install dependencies') {
             steps {
                 // Install any dependencies listed in requirements.txt
-                sh 'bash -c "source $VENV_PATH/bin/activate && pip install -r requirements.txt"'
+                bat "call ${VENV_PATH}\\Scripts\\activate.bat && pip install -r requirements.txt"
             }
         }
 
@@ -38,22 +37,17 @@ pipeline {
                 // Run your tests here. This is just a placeholder.
                 // For example, if you had tests, you might run: pytest
                 echo "Assuming tests are run here. Please replace this with actual test commands."
-                // sh "source $VENV_PATH/bin/activate && pytest"
-                 }
+                // bat "call ${VENV_PATH}\\Scripts\\activate.bat && pytest"
             }
+        }
 
         stage('Deploy') {
             steps {
                 script {
                     // Deploy your Flask app
-                    // This step greatly depends on where and 
-                    // how you're deploying your app
-                    // For example, if you're deploying to a server you control,
-                    // you might use scp, rsync, or SSH commands
-                    // If you're using a PaaS (Platform as a Service), 
-                    //you might use a specific CLI tool for that platform
+                    // This step greatly depends on where and how you're deploying your app
                     echo 'Deploying application...'
-                    // Example: sh 'scp -r . user@your_server:/path/to/deploy'
+                    // Example: bat 'copy /Y .\*.* user@your_server:/path/to/deploy'
                 }
             }
         }
@@ -63,7 +57,7 @@ pipeline {
         always {
             // Clean up after the pipeline runs
             echo 'Cleaning up...'
-            sh 'rm -rf ${VIRTUAL_ENV_DIR}'
+            bat "rmdir /S /Q ${VENV_PATH}"
         }
     }
 }

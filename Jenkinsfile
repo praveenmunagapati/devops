@@ -4,51 +4,44 @@ pipeline {
     environment {
         VENV_PATH = 'myprojectenv'
         FLASK_APP = 'myproject.py'
+        IMAGE_NAME = 'my_flask_app'
+        CONTAINER_NAME = 'flask_app_container'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from a source control management system (e.g., Git)
                 git url: 'https://github.com/praveenmunagapati/devops.git', branch: 'main'
             }
         }
 
-        stage('Setup Virtual Environment') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // Check for the virtual environment, create it if it doesn't exist
-                    bat "python -m venv ${VENV_PATH}"
-                    // Activate the virtual environment
-                    bat "call ${VENV_PATH}\\Scripts\\activate.bat"
+                    // Build the Docker image
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
 
-        stage('Install dependencies') {
-            steps {
-                // Install any dependencies listed in requirements.txt
-                bat "call ${VENV_PATH}\\Scripts\\activate.bat && pip install -r requirements.txt"
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Run your tests here. This is just a placeholder.
-                // For example, if you had tests, you might run: pytest
-                echo "Assuming tests are run here. Please replace this with actual test commands."
-                // bat "call ${VENV_PATH}\\Scripts\\activate.bat && pytest"
-            }
-        }
-
-        stage('Deploy') {
+        stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Deploy your Flask app
-                    // This step greatly depends on where and how you're deploying your app
-                    echo 'Deploying application...'
-                    // Example: bat 'copy /Y .\*.* user@your_server:/path/to/deploy'
-                    bat "call ${VENV_PATH}\\Scripts\\activate.bat && python app.py"
+                    // Stop and remove existing container if it exists
+                    echo 'Stopping existing Flask application...'
+                    sh "docker stop ${CONTAINER_NAME} || true"
+                    sh "docker rm ${CONTAINER_NAME} || true"
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                script {
+                    // Run the Docker container
+                    // Adjust ports and environment variables as needed
+                    echo 'Running Flask application in Docker...'
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}"
                 }
             }
         }
@@ -56,9 +49,9 @@ pipeline {
 
     post {
         always {
-            // Clean up after the pipeline runs
             echo 'Cleaning up...'
-            bat "rmdir /S /Q ${VENV_PATH}"
+            // Optional: remove the Docker image if desired
+            sh "docker rmi ${IMAGE_NAME} || true"
         }
     }
 }

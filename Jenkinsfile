@@ -11,6 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                 cleanWs()
                 git url: 'https://github.com/praveenmunagapati/devops.git', branch: 'main'
             }
         }

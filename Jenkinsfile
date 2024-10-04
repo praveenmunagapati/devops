@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                 cleanWs()
+                cleanWs()
                 git url: 'https://github.com/praveenmunagapati/devops.git', branch: 'main'
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    sh "docker build -t ${IMAGE_NAME} ."
+                    bat "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
@@ -30,8 +30,8 @@ pipeline {
                 script {
                     // Stop and remove existing container if it exists
                     echo 'Stopping existing Flask application...'
-                    sh "docker stop ${CONTAINER_NAME} || true"
-                    sh "docker rm ${CONTAINER_NAME} || true"
+                    bat "docker stop ${CONTAINER_NAME} || exit 0"
+                    bat "docker rm ${CONTAINER_NAME} || exit 0"
                 }
             }
         }
@@ -40,9 +40,8 @@ pipeline {
             steps {
                 script {
                     // Run the Docker container
-                    // Adjust ports and environment variables as needed
                     echo 'Running Flask application in Docker...'
-                    sh "docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}"
+                    bat "docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}"
                 }
             }
         }
@@ -51,8 +50,8 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            // Optional: remove the Docker image if desired
-            sh "docker rmi ${IMAGE_NAME} || true"
+            // Remove the Docker image if desired
+            bat "docker rmi ${IMAGE_NAME} || exit 0"
         }
     }
 }

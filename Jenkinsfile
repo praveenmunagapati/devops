@@ -47,8 +47,14 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Assuming kubectl is already configured for local access
-                    echo 'Deploying to local Kubernetes...'
+                    // Create a temporary kubeconfig file
+                    writeFile file: 'kubeconfig', text: credentials('kubeconfig')
+
+                    // Set the Kube config environment variable
+                    env.KUBECONFIG = 'kubeconfig'
+
+                    // Apply Kubernetes deployment and service configurations
+                    echo 'Deploying to Kubernetes...'
                     bat "kubectl apply -f flask-app-deployment.yaml"
                     bat "kubectl apply -f flask-app-service.yaml"
                 }

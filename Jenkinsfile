@@ -4,59 +4,51 @@ pipeline {
     environment {
         VENV_PATH = 'myprojectenv'
         FLASK_APP = 'myproject.py'
-        IMAGE_NAME = 'my_flask_app'
-        CONTAINER_NAME = 'flask_app_container'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
+                // Checkout code from a source control management system (e.g., Git)
                 git url: 'https://github.com/praveenmunagapati/devops.git', branch: 'main'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Setup Virtual Environment') {
             steps {
                 script {
-                    // Build the Docker image
-                    bat "docker build -t ${IMAGE_NAME} ."
+                    // Check for the virtual environment, create it if it doesn't exist
+                    bat "python -m venv ${VENV_PATH}"
+                    // Activate the virtual environment
+                    bat "call ${VENV_PATH}\\Scripts\\activate.bat"
                 }
             }
         }
 
-        stage('Stop and Remove Existing Container') {
+        stage('Install dependencies') {
             steps {
-                script {
-                    echo 'Stopping existing Flask application...'
-                    bat "docker stop ${CONTAINER_NAME} || exit 0"
-                    bat "docker rm ${CONTAINER_NAME} || exit 0"
-                }
+                // Install any dependencies listed in requirements.txt
+                bat "call ${VENV_PATH}\\Scripts\\activate.bat && pip install -r requirements.txt"
             }
         }
 
-        stage('Run Container') {
+        stage('Test') {
             steps {
-                script {
-                    echo 'Running Flask application in Docker...'
-                    bat "docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}"
-                }
+                // Run your tests here. This is just a placeholder.
+                // For example, if you had tests, you might run: pytest
+                echo "Assuming tests are run here. Please replace this with actual test commands."
+                // bat "call ${VENV_PATH}\\Scripts\\activate.bat && pytest"
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy') {
             steps {
                 script {
-                    // Create a temporary kubeconfig file
-                    //writeFile file: 'kubeconfig', text: credentials('kubeconfig')
-
-                    // Set the Kube config environment variable
-                    env.KUBECONFIG = 'kubeconfig'
-
-                    // Apply Kubernetes deployment and service configurations
-                    echo 'Deploying to Kubernetes...'
-                    bat "kubectl apply -f flask-app-deployment.yaml"
-                    bat "kubectl apply -f flask-app-service.yaml"
+                    // Deploy your Flask app
+                    // This step greatly depends on where and how you're deploying your app
+                    echo 'Deploying application...'
+                    // Example: bat 'copy /Y .\*.* user@your_server:/path/to/deploy'
+                    bat "call ${VENV_PATH}\\Scripts\\activate.bat && python app.py"
                 }
             }
         }
@@ -64,8 +56,9 @@ pipeline {
 
     post {
         always {
+            // Clean up after the pipeline runs
             echo 'Cleaning up...'
-            bat "docker rmi ${IMAGE_NAME} || exit 0"
+            bat "rmdir /S /Q ${VENV_PATH}"
         }
     }
 }
